@@ -1,0 +1,143 @@
+checkpoint: checkpoint.pt
+input:
+  glob: '*'
+  stride: 1
+  max_images: null
+  indices: null
+  sparse_subdir: gt
+preprocess:
+  mode: center_crop
+  height: 518
+  width: 518
+  patch_size: 14
+output:
+  save_npz: true
+  save_ply: true
+  confidence_threshold: 0.0
+  save_sh_dc_only: false
+  save_pyramid: false
+manual_metric_divisor: 300.0
+model:
+  __object__:
+    path: vggt.models.depth_anything_3.model.da3
+    name: DepthAnything3Net
+    args: as_params
+  net:
+    __object__:
+      path: vggt.models.depth_anything_3.model.dinov2.dinov2
+      name: DinoV2
+      args: as_params
+    name: vitg
+    out_layers:
+    - 19
+    - 27
+    - 33
+    - 39
+    alt_start: 13
+    qknorm_start: 13
+    rope_start: 13
+    cat_token: true
+  head:
+    __object__:
+      path: vggt.models.depth_anything_3.model.dualdpt
+      name: DualDPT
+      args: as_params
+    dim_in: 3072
+    output_dim: 2
+    features: 256
+    out_channels:
+    - 256
+    - 512
+    - 1024
+    - 1024
+  cam_dec:
+    __object__:
+      path: vggt.models.depth_anything_3.model.cam_dec
+      name: CameraDec
+      args: as_params
+    dim_in: 3072
+  backend_dense_head:
+    __object__:
+      path: vggt.models.depth_anything_3.model.backend_dense_dpt
+      name: BackendDenseDPT
+      args: as_params
+    dim_in: 3072
+    patch_size: 14
+    output_dim: 1
+    activation: linear
+    conf_activation: linear
+    features: 256
+    out_channels:
+    - 256
+    - 512
+    - 1024
+    - 1024
+    pos_embed: true
+    down_ratio: 1
+    head_name: backend_dense
+    use_sky_head: false
+    norm_type: layer
+  backend_gs_decoder:
+    __object__:
+      path: vggt.heads.voxel_octdensify_adapter
+      name: VoxelOctDensifyAdapter
+      args: as_params
+    backend_out_dim: 128
+    gaussian_splits: 1
+    sh_degree: 2
+    pred_color: false
+    gaussian_scale_min: 1.0e-05
+    gaussian_scale_max: 0.002
+    gaussian_offset_max: 0.004
+    backbone_dim: 128
+    geometry_hidden_dim: 256
+    appearance_hidden_dim: 256
+    coarse_voxel_size: 0.008
+    manual_metric_divisor: ${manual_metric_divisor}
+    spunet_base_channels: 32
+    spunet_channels:
+    - 32
+    - 64
+    - 128
+    - 256
+    - 256
+    - 128
+    - 96
+    - 96
+    spunet_layers:
+    - 2
+    - 3
+    - 4
+    - 6
+    - 2
+    - 2
+    - 2
+    - 2
+    inference_mode: adaptive
+    densification_score_enabled: true
+    densification_score_hidden_dim: 128
+    densification_score_detach_features: true
+    octree_densify_methods:
+    - learned_score
+    - learned_score
+    octree_split_fraction:
+    - 0.3
+    - 0.3
+    octree_split_strategy: per_level
+  backend_option:
+    high_resolution_uptimes: 14
+    voxel_chunk_size: null
+tto:
+  enabled: true
+  steps: 20
+  lr: 0.0005
+  rank: 4
+  alpha: 16.0
+  dropout: 0.0
+  lambda_pose: 1.0
+  pose_translation_weight: 1.0
+  lambda_intrinsics: 0.01
+  grad_clip: 1.0
+  gradient_checkpointing: true
+  target_modules: null
+  save_lora: true

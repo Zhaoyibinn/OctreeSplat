@@ -1,0 +1,19 @@
+# Direct dependencies for inference, PLY export and optional LoRA TTO.
+# Tested Python: 3.10.19. GPU packages: requirements-cuda.txt; see INSTALL.md.
+numpy==1.26.1
+Pillow==12.0.0
+einops==0.8.1
+addict==2.4.0
+omegaconf==2.3.0
+plyfile==1.1.3
+tqdm==4.67.1
+
+--extra-index-url https://download.pytorch.org/whl/cu128
+--find-links https://data.pyg.org/whl/torch-2.7.0+cu128.html
+--only-binary torch-scatter
+torch==2.7.1+cu128
+torch-scatter==2.1.2+pt27cu128
+spconv-cu126==2.3.8
+cumm-cu126==0.7.11
+
+
